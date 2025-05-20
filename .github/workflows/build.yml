@@ -1,8 +1,14 @@
 name: Build project after push
 
+#on:
+#  issue_comment:
+#    types: [ created, edited ]
 on:
-  issue_comment:
-    types: [ created, edited ]
+  push:
+    branches:
+    - main
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
