@@ -7,6 +7,7 @@ import android.os.*
 import android.provider.Settings
 import android.text.TextUtils
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
@@ -16,6 +17,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val testTapButton = findViewById<Button>(R.id.testTap)
+        val outputTextView = findViewById<TextView>(R.id.outputText)
 
         testTapButton.setOnClickListener {
             val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
@@ -24,26 +26,30 @@ class MainActivity : AppCompatActivity() {
             if (isAccessibilityServiceEnabled(this, MyAccessibilityService::class.java)) {
                 Toast.makeText(this, "Launching OpenVPN...", Toast.LENGTH_SHORT).show()
 
-                // 1. Launch OpenVPN for Android using its API intent
                 val intent = Intent()
-                intent.component = ComponentName("de.blinkt.openvpn", "de.blinkt.openvpn.api.StartProfile")
-                intent.putExtra("de.blinkt.openvpn.api.profileName", "MyVPN") // name of your VPN profile
+                intent.component = ComponentName(
+                    "de.blinkt.openvpn",
+                    "de.blinkt.openvpn.api.StartProfile"
+                )
+                intent.putExtra("de.blinkt.openvpn.api.profileName", "MyVPN")
                 intent.action = Intent.ACTION_MAIN
                 intent.addCategory(Intent.CATEGORY_LAUNCHER)
+
                 try {
                     startActivity(intent)
                 } catch (e: Exception) {
-                    Toast.makeText(this, "OpenVPN is not installed", Toast.LENGTH_SHORT).show()
+                    // Display exception message in the TextView
+                    outputTextView.text = "Failed to launch OpenVPN:\n${e.message}"
                     return@setOnClickListener
                 }
 
-                // 2. Wait 2 seconds, then trigger simulateTap via the AccessibilityService
+                // Wait 2 seconds, then trigger tap via AccessibilityService
                 Handler(Looper.getMainLooper()).postDelayed({
                     prefs.edit().putBoolean("simulateTap", true).apply()
                 }, 2000)
 
             } else {
-                Toast.makeText(this, "Please enable the Accessibility Service", Toast.LENGTH_LONG).show()
+                outputTextView.text = "Accessibility Service is not enabled."
                 startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             }
         }

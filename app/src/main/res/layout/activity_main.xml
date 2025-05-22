@@ -17,6 +17,7 @@
         android:layout_marginTop="32dp" />
 
     <TextView
+        android:id="@+id/outputText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World, from Tancredi-Paul Grozav!"
