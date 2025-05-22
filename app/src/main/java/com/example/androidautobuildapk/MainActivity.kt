@@ -31,7 +31,8 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("de.blinkt.openvpn.api.profileName", "MyVPN")
 
                 try {
-                    startService(intent)
+                    // startService(intent)
+                    sendBroadcast(intent)
                 } catch (e: Exception) {
                     outputTextView.text = "Failed to start OpenVPN service:\n${e.message}"
                     return@setOnClickListener
