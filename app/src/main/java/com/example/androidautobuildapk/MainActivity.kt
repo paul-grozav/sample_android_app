@@ -21,29 +21,23 @@ class MainActivity : AppCompatActivity() {
 
         testTapButton.setOnClickListener {
             val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
-            prefs.edit().putBoolean("simulateTap", true).apply()
 
             if (isAccessibilityServiceEnabled(this, MyAccessibilityService::class.java)) {
-                Toast.makeText(this, "Launching OpenVPN...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Starting OpenVPN profile...", Toast.LENGTH_SHORT).show()
 
-                val intent = Intent()
-                intent.component = ComponentName(
-                    "de.blinkt.openvpn",
-                    "de.blinkt.openvpn.api.StartProfile"
-                )
+                // Prepare the intent to start OpenVPN for Android profile
+                val intent = Intent("de.blinkt.openvpn.api.START_PROFILE")
+                intent.setClassName("de.blinkt.openvpn", "de.blinkt.openvpn.api.ExternalAPI")
                 intent.putExtra("de.blinkt.openvpn.api.profileName", "MyVPN")
-                intent.action = Intent.ACTION_MAIN
-                intent.addCategory(Intent.CATEGORY_LAUNCHER)
 
                 try {
-                    startActivity(intent)
+                    startService(intent)
                 } catch (e: Exception) {
-                    // Display exception message in the TextView
-                    outputTextView.text = "Failed to launch OpenVPN:\n${e.message}"
+                    outputTextView.text = "Failed to start OpenVPN service:\n${e.message}"
                     return@setOnClickListener
                 }
 
-                // Wait 2 seconds, then trigger tap via AccessibilityService
+                // Optional: simulate tap after a short delay
                 Handler(Looper.getMainLooper()).postDelayed({
                     prefs.edit().putBoolean("simulateTap", true).apply()
                 }, 2000)
