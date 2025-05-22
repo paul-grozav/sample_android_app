@@ -15,33 +15,37 @@ class MyAccessibilityService : AccessibilityService() {
         // Not used
     }
 
-    override fun onInterrupt() {
-        // Not used
-    }
+    override fun onInterrupt() {}
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         Toast.makeText(this, "Accessibility Service Connected", Toast.LENGTH_SHORT).show()
+        checkForTapFlag()
+    }
 
-        // Delay a bit to let the system settle
+    override fun onStartCommand(intent: android.content.Intent?, flags: Int, startId: Int): Int {
+        checkForTapFlag()
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun checkForTapFlag() {
         Handler(Looper.getMainLooper()).postDelayed({
             val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
             if (prefs.getBoolean("simulateTap", false)) {
-                simulateTap(540f, 960f) // Tap near the center
-                Toast.makeText(this, "Simulating tap!", Toast.LENGTH_SHORT).show()
+                simulateTap(500f, 400f)
+                Toast.makeText(this, "Atingere trimisă", Toast.LENGTH_SHORT).show()
                 prefs.edit().putBoolean("simulateTap", false).apply()
             }
-        }, 1000)
+        }, 500)
     }
 
     private fun simulateTap(x: Float, y: Float) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val path = Path().apply { moveTo(x, y) }
-            val stroke = GestureDescription.StrokeDescription(path, 0, 100)
-            val gesture = GestureDescription.Builder().addStroke(stroke).build()
+            val gesture = GestureDescription.Builder()
+                .addStroke(GestureDescription.StrokeDescription(path, 0, 100))
+                .build()
             dispatchGesture(gesture, null, null)
-        } else {
-            Toast.makeText(this, "Your Android version does not support gestures", Toast.LENGTH_SHORT).show()
         }
     }
 }

@@ -3,7 +3,7 @@ package com.example.androidautobuildapk
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
+import android.os.*
 import android.provider.Settings
 import android.text.TextUtils
 import android.widget.Button
@@ -18,17 +18,33 @@ class MainActivity : AppCompatActivity() {
         val testTapButton = findViewById<Button>(R.id.testTap)
 
         testTapButton.setOnClickListener {
-            // Set a flag so the accessibility service will simulate the tap
             val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
             prefs.edit().putBoolean("simulateTap", true).apply()
 
             if (isAccessibilityServiceEnabled(this, MyAccessibilityService::class.java)) {
-                Toast.makeText(this, "Tap will be simulated", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Launching OpenVPN...", Toast.LENGTH_SHORT).show()
+
+                // 1. Launch OpenVPN for Android using its API intent
+                val intent = Intent()
+                intent.component = ComponentName("de.blinkt.openvpn", "de.blinkt.openvpn.api.StartProfile")
+                intent.putExtra("de.blinkt.openvpn.api.profileName", "MyVPN") // name of your VPN profile
+                intent.action = Intent.ACTION_MAIN
+                intent.addCategory(Intent.CATEGORY_LAUNCHER)
+                try {
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "OpenVPN is not installed", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                // 2. Wait 2 seconds, then trigger simulateTap via the AccessibilityService
+                Handler(Looper.getMainLooper()).postDelayed({
+                    prefs.edit().putBoolean("simulateTap", true).apply()
+                }, 2000)
+
             } else {
-                // Ask the user to enable the accessibility service
-                Toast.makeText(this, "Enable Accessibility Service", Toast.LENGTH_LONG).show()
-                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                startActivity(intent)
+                Toast.makeText(this, "Please enable the Accessibility Service", Toast.LENGTH_LONG).show()
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             }
         }
     }
